@@ -1,0 +1,43 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-dev
+    container_name: rails_web
+    command: /bin/sh -c "rm -f tmp/pids/server.pid && rails s"
+    environment:
+      RAILS_ENV: development
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: hoge
+      DATABASE_HOST: db
+    volumes:
+      - .:/var/www
+    ports:
+      - '4567:3000'
+    links:
+      - db
+
+  db:
+    image: mysql:5.7.22
+    container_name: rails_db
+    ports:
+      - '4568:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: hoge
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  swagger_ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger_ui
+    volumes:
+      - ./doc/swagger.yaml:/usr/share/nginx/html/swagger.yaml:ro
+    environment:
+      API_URL: ./swagger.yaml
+    ports:
+      - "4569:8080"
+
+volumes:
+  mysql-data:
+    driver: local
